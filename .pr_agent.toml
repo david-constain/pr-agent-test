@@ -1,0 +1,20 @@
+[config]
+model = "anthropic/claude-3-5-sonnet-20241022"
+fallback_models = ["anthropic/claude-3-5-haiku-20241022"]
+
+[pr_reviewer]
+extra_instructions = "Keep feedback concise. Focus on correctness, security, and maintainability."
+require_score_review = false
+require_tests_review = true
+require_security_review = true
+num_code_suggestions = 3
+
+[pr_description]
+publish_labels = false
+add_original_user_description = true
+generate_ai_title = false
+
+[github_action_config]
+auto_review = true
+auto_describe = true
+auto_improve = false
