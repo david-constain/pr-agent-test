@@ -1,11 +1,9 @@
 name: PR-Agent
-
 on:
-  pull_request:
-    types: [opened, reopened, ready_for_review]
+  # pull_request:
+    # types: [opened, reopened, edited]
   issue_comment:
     types: [created]
-
 permissions:
   contents: read
   pull-requests: write
@@ -13,25 +11,21 @@ permissions:
 
 jobs:
   pr_agent:
-    # Skip bot comments; for issue_comment, only run on PR threads with slash commands
     if: |
-      github.event.sender.type != 'Bot' && (
-        github.event_name == 'pull_request' || (
-          github.event_name == 'issue_comment' &&
-          github.event.issue.pull_request &&
-          startsWith(github.event.comment.body, '/')
-        )
+      (
+        github.event_name == 'issue_comment' &&
+        github.event.issue.pull_request &&
+        startsWith(github.event.comment.body, '/')
       )
     runs-on: ubuntu-latest
     steps:
-      - name: Run PR-Agent
-        # v0.34.2 includes Anthropic auth fix (dummy_key no longer overrides ANTHROPIC.KEY)
-        uses: docker://pragent/pr-agent:0.34.2-github_action
+      - name: Run CodiumAI PR-Agent
+        uses: qodo-ai/pr-agent@eb4cdbb115dfb711375a24eccc75e3ef73ec03bc # v0.30
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          config.model: "anthropic/claude-sonnet-4-5-20250929"
+          config.fallback_models: '["anthropic/claude-haiku-4-5-20251001"]'
           ANTHROPIC.KEY: ${{ secrets.ANTHROPIC_API_KEY }}
-          config.model: "anthropic/claude-3-5-sonnet-20241022"
-          config.fallback_models: '["anthropic/claude-3-5-haiku-20241022"]'
           github_action_config.auto_review: "true"
           github_action_config.auto_describe: "true"
-          github_action_config.auto_improve: "false"
+          github_action_config.auto_improve: "true"

@@ -1,20 +1,50 @@
-[config]
-model = "anthropic/claude-3-5-sonnet-20241022"
-fallback_models = ["anthropic/claude-3-5-haiku-20241022"]
+[general]
+# When to run automatically:
+auto_review_on_pr_open = false
+auto_describe_on_pr_open = false
 
-[pr_reviewer]
-extra_instructions = "Keep feedback concise. Focus on correctness, security, and maintainability."
-require_score_review = false
-require_tests_review = true
-require_security_review = true
-num_code_suggestions = 3
+# Size/time limits
+max_patch_size_tokens = 20000
+max_file_review = 50
+timeout_seconds = 240
 
-[pr_description]
-publish_labels = false
-add_original_user_description = true
-generate_ai_title = false
+# Model selection - ANTHROPIC ONLY
+# Note: claude-3-5-sonnet-20241022 / claude-3-5-haiku-20241022 were retired by Anthropic
+# (API returns not_found_error). Updated to current Sonnet/Haiku 4.5 IDs so the agent can run.
+provider = "anthropic"
+model = "claude-sonnet-4-5-20250929"
+fallback_models = ["claude-haiku-4-5-20251001"]
+anthropic_api_key_env_var = "ANTHROPIC_API_KEY"
 
-[github_action_config]
-auto_review = true
-auto_describe = true
-auto_improve = false
+# Disable OpenAI completely
+openai_api_key = ""
+azure_api_key = ""
+
+[review]
+review_depth = "deep"        # standard | deep
+inline_comments = true
+suggest_fixes = true
+detect_secrets = true
+style_checks = true
+security_checks = true
+test_coverage_hints = true
+
+[describe]
+update_title = true
+update_summary = true
+add_labels = true
+labels = ["AI-Reviewed", "Needs-Reviewer"]
+
+[commands]
+# Enable slash commands in PR comments:
+enabled = true
+triggers = ["/review", "/describe", "/tests", "/summarize"]
+
+[scopes]
+# Optionally restrict to certain paths (uncomment to use)
+# include = ["src/**", "app/**"]
+# exclude = ["**/*.md", "docs/**", "tests/snapshots/**"]
+
+[enterprise]
+# Leave empty unless you use a proxy or self-hosted gateway
+use_proxy = false

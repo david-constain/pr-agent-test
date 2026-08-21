@@ -1,61 +1,33 @@
-# PR-Agent test
+# PR-Agent test (exact copy of gotrhythm/rhythm-pulse setup)
 
-Minimal personal-repo repro for [Qodo PR-Agent](https://github.com/qodo-ai/pr-agent) with Anthropic.
+Repro of `.github/workflows/pr_agent.yml` + `.pr_agent.toml` from `rhythm-pulse`,
+to isolate org policy vs config failures.
 
-Used to isolate whether failures in `gotrhythm/rhythm-pulse` are org policy vs config/version.
+## Setup
 
-## One-time setup
+1. Repo secret: `ANTHROPIC_API_KEY`
+2. Actions enabled for this repo
 
-1. Add a repository secret:
-   - GitHub → **Settings → Secrets and variables → Actions → New repository secret**
-   - Name: `ANTHROPIC_API_KEY`
-   - Value: your Anthropic API key
+## How to trigger
 
-2. Ensure Actions are enabled for this repo:
-   - **Settings → Actions → General → Allow all actions**
-
-## How to test
-
-### Auto-run on PR open
-
-```bash
-git checkout -b test/pr-agent
-echo "hello from pr-agent" >> test_file.txt
-git add test_file.txt
-git commit -m "test: trigger pr-agent"
-git push -u origin HEAD
-gh pr create --fill
-```
-
-Open the PR and wait for the **PR-Agent** workflow. You should get describe + review comments.
-
-### Slash commands
-
-On the PR, comment:
+Only slash commands on a PR (same as rhythm-pulse — `pull_request` auto-run is commented out):
 
 ```text
 /review
-```
-
-or:
-
-```text
 /describe
 ```
 
-A new workflow run should start for that comment.
+## What we learned from the first test
 
-## What success / failure means
+The Action exited green but posted only "Preparing review…" because Anthropic returned:
 
-| Result | Likely conclusion for rhythm-pulse |
-|---|---|
-| Works here | Org policy, secrets, or Action allowlist on `gotrhythm` |
-| Fails here too (auth) | Anthropic key / model config |
-| No workflow runs | Actions disabled or trigger `if:` not matching |
+```text
+not_found_error: model: claude-3-5-sonnet-20241022
+```
 
-## Differences from rhythm-pulse setup
+(and the same for `claude-3-5-haiku-20241022`). That is very likely why rhythm-pulse also "stopped working" — retired model IDs, not org policy.
 
-- Uses Docker image `pragent/pr-agent:0.34.2-github_action` (Anthropic auth fix)
-- `pull_request` trigger enabled (auto-run)
-- Slash commands still work via `issue_comment`
-- Clean `[config]` toml (not the older `[general]` layout)
+This repo keeps the rhythm-pulse workflow/toml structure, but uses current Anthropic model IDs:
+
+- `anthropic/claude-sonnet-4-5-20250929`
+- fallback: `anthropic/claude-haiku-4-5-20251001`
